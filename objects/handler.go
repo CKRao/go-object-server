@@ -59,25 +59,28 @@ func AddObject(c *gin.Context) {
 		return
 	}
 
-	file, err := os.Create(filePath)
+	//从file中获取file对象
+	header, err := c.FormFile("file")
+
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "create file error",
+			"message": "get file error",
 		})
-		return
 	}
 
-	defer file.Close()
-
-	_, err = io.Copy(file, c.Request.Body)
-
-	if err != nil {
+	//保存文件
+	if err := c.SaveUploadedFile(header, filePath); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "add object error",
 		})
+		return
 	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success",
+	})
 }
 
 //删除存储对象
