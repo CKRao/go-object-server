@@ -16,8 +16,6 @@ func main() {
 
 	initConfig()
 
-	Config.GetMqPath()
-
 	//todo：数据服务心跳发送消息
 	//todo：数据服务locate 定位对象和监听定位消息
 
