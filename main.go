@@ -2,14 +2,22 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"go-object-server/commons"
 	"go-object-server/objects"
 	"log"
 	"net/http"
 )
 
+var Config *commons.ConfigModel
+
 //go对象存储服务器入口
 func main() {
 	log.Println(">>>>>>>>go-object-server start!>>>>>>>>")
+
+	initConfig()
+
+	Config.GetMqPath()
+
 	//todo：数据服务心跳发送消息
 	//todo：数据服务locate 定位对象和监听定位消息
 
@@ -18,12 +26,16 @@ func main() {
 	//初始化路由配置
 	initRoutes(r)
 
-	err := r.Run(":9000")
+	err := r.Run(":" + Config.Server.Port)
 	if err != nil {
 		log.Fatalln(">>>>>>>>go-object-server error!>>>>>>>>>>")
 	}
 
 	log.Println(">>>>>>>>go-object-server end!>>>>>>>>>>")
+}
+
+func initConfig() {
+	Config = commons.NewConfig()
 }
 
 func initRoutes(r *gin.Engine) {

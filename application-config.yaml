@@ -1,0 +1,9 @@
+server:
+  port: 9000
+
+rabbit:
+  protocol: amqp
+  username: guest
+  password: guest
+  ip: 106.54.200.133
+  port: 5672
