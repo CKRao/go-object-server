@@ -1,15 +1,29 @@
 package commons
 
 import (
+	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
+	"sync"
 )
 
 const YamlConfigPath string = "./application-config.yaml"
 
-func NewConfig() *ConfigModel {
-	return getConfig()
+var config *ConfigModel
+
+var lock sync.Mutex
+
+//单例模式
+func GetConfigIns() *ConfigModel {
+	lock.Lock()
+	defer lock.Unlock()
+
+	if config == nil {
+		config = getConfig()
+	}
+
+	return config
 }
 
 //配置文件结构体
@@ -25,7 +39,6 @@ type server struct {
 
 //RabbitMq配置
 type rabbitMqServer struct {
-	Protocol string `yaml:"protocol"`
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
 	Ip       string `yaml:"ip"`
@@ -35,6 +48,8 @@ type rabbitMqServer struct {
 //获取配置文件
 func getConfig() *ConfigModel {
 	c := &ConfigModel{}
+	//读取配置文件
+	//todo:当前从程序运行的目录下读取，之后需优化为可自定义配置文件路径，通过启动参数设置
 	yamlFile, err := ioutil.ReadFile(YamlConfigPath)
 
 	if err != nil {
@@ -51,13 +66,16 @@ func getConfig() *ConfigModel {
 }
 
 //获取RabbitMq url
-func (c *ConfigModel) GetMqPath() string {
-	//amqp://guest:guest@localhost:5672/
-	mqServer := c.RabbitMqServer
+func (c *ConfigModel) GetMqUrl() string {
+	// 连接RabbitMq url -> amqp://guest:guest@localhost:5672/
 
-	path := mqServer.Protocol + "://" + mqServer.Username + ":" + mqServer.Password + "@" + mqServer.Ip + ":" + mqServer.Port + "/"
+	//获取RabbitMq配置信息
+	mqConfig := c.RabbitMqServer
 
-	log.Println("获取RabbitMq url : {}", path)
+	//拼接url
+	url := fmt.Sprintf("amqp://%s:%s@%s:%s/", mqConfig.Username, mqConfig.Password, mqConfig.Ip, mqConfig.Port)
 
-	return path
+	log.Println("获取RabbitMq url : {}", url)
+
+	return url
 }

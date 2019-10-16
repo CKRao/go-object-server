@@ -3,6 +3,8 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"go-object-server/commons"
+	"go-object-server/heartbeat"
+	"go-object-server/locate"
 	"go-object-server/objects"
 	"log"
 	"net/http"
@@ -14,11 +16,12 @@ var Config *commons.ConfigModel
 func main() {
 	log.Println(">>>>>>>>go-object-server start!>>>>>>>>")
 
-	initConfig()
-
-	//todo：数据服务心跳发送消息
-	//todo：数据服务locate 定位对象和监听定位消息
-
+	//初始化配置
+	Config = commons.GetConfigIns()
+	//数据服务心跳发送消息
+	go heartbeat.StartHeartBeat()
+	//数据服务locate 定位对象和监听定位消息
+	go locate.StartLocate()
 	//配置路由监听
 	r := gin.Default()
 	//初始化路由配置
@@ -32,10 +35,7 @@ func main() {
 	log.Println(">>>>>>>>go-object-server end!>>>>>>>>>>")
 }
 
-func initConfig() {
-	Config = commons.NewConfig()
-}
-
+//初始化路由配置关系
 func initRoutes(r *gin.Engine) {
 
 	r.GET("/", func(c *gin.Context) {
