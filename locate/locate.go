@@ -35,7 +35,6 @@ func StartLocate() {
 	q := mq.New(commons.GetConfigIns().GetMqUrl())
 	defer q.Close()
 
-	q.Name = "locate"
 	q.Bind(exchangeName)
 	c := q.Consume()
 

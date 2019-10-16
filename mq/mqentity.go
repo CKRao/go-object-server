@@ -2,6 +2,7 @@ package mq
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/streadway/amqp"
 	"log"
 )
@@ -66,6 +67,8 @@ func (q *RabbitMQ) Bind(exchange string) {
 func (q *RabbitMQ) Send(queue string, body interface{}) {
 	bytes, err := json.Marshal(body)
 
+	//queue = "amq.gen-1VYeg2kS-yS3Um-M0l91cw"
+	fmt.Println("replay_to ", queue)
 	if err != nil {
 		log.Fatalf("Send -> json.Marshal error : %s , queue : %s \n", err, queue)
 	}
@@ -79,7 +82,7 @@ func (q *RabbitMQ) Send(queue string, body interface{}) {
 	)
 
 	if err != nil {
-		log.Fatalf("channel.Publish error : %s , queue : %s \n", err, q.Name)
+		log.Fatalf("channel.Publish error : %s , queue : %s \n", err, queue)
 	}
 }
 
