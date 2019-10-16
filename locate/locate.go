@@ -1,7 +1,6 @@
 package locate
 
 import (
-	"encoding/json"
 	"fmt"
 	"go-object-server/commons"
 	"go-object-server/mq"
@@ -31,6 +30,7 @@ type locateMsg struct {
 }
 
 func StartLocate() {
+	ip := util.GetIP()
 	//新建RabbitMQ实体
 	q := mq.New(commons.GetConfigIns().GetMqUrl())
 	defer q.Close()
@@ -40,15 +40,15 @@ func StartLocate() {
 	c := q.Consume()
 
 	for msg := range c {
-		mqMsg := &locateMsg{}
-		err := json.Unmarshal(msg.Body, mqMsg)
+		//mqMsg := &locateMsg{}
+		s := string(msg.Body)
 
-		if err != nil {
-			log.Fatalln("StartLocate json.Unmarshal error : ", err)
-		}
-		path := fmt.Sprintf("%s/objects/%s", objects.StorageRoot, mqMsg.name)
+		//if err != nil {
+		//	log.Fatalln("StartLocate json.Unmarshal error : ", err)
+		//}
+		path := fmt.Sprintf("%s/objects/%s", objects.StorageRoot, s)
 		if Locate(path) {
-			q.Send(msg.ReplyTo, util.Ip)
+			q.Send(msg.ReplyTo, ip)
 		}
 	}
 }

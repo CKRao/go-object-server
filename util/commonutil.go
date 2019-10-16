@@ -9,17 +9,17 @@ import (
 
 var lock sync.Mutex
 
-var Ip string = GetIP()
+var ip string
 
 func GetIP() string {
 	lock.Lock()
 	defer lock.Unlock()
 
-	if Ip == "" {
-		Ip = getIp()
+	if ip == "" {
+		ip = getIp()
 	}
 
-	return Ip
+	return ip
 }
 
 //获取外网IP
