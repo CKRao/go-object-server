@@ -1,6 +1,8 @@
 package util
 
 import (
+	"fmt"
+	"go-object-server/commons"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -20,6 +22,13 @@ func GetIP() string {
 	}
 
 	return ip
+}
+
+func GetAddress() string {
+	port := commons.GetConfigIns().Server.Port
+	address := fmt.Sprintf("%s:%s", GetIP(), port)
+
+	return address
 }
 
 //获取外网IP

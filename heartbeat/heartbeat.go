@@ -18,14 +18,14 @@ const (
 //每5秒发送一次消息到apiServers exchange
 //apiServers exchange 需在RabbitMQ服务端提前创建
 func StartHeartBeat() {
-	ip := util.GetIP()
+	address := util.GetAddress()
 	//新建RabbitMQ实体
-	q := mq.New(commons.GetConfigIns().GetMqUrl())
+	q := mq.NewExchange(commons.GetConfigIns().GetMqUrl(), exchangeName)
 
 	defer q.Close()
 
 	for {
-		q.Publish(exchangeName, ip)
+		q.Publish(exchangeName, address)
 		time.Sleep(sendDuration)
 	}
 }

@@ -13,20 +13,20 @@ type RabbitMQ struct {
 	exchange string
 }
 
+//新建匿名队列
 func New(url string) *RabbitMQ {
-	conn, err := amqp.Dial(url)
+	return NewByName(url, "")
+}
 
-	if err != nil {
-		log.Fatalf("amqp.Dial error : %s , url %s \n", err, url)
-	}
-	channel, err := conn.Channel()
+//通过名称新建队列
+func NewByName(url string, name string) *RabbitMQ {
 
-	if err != nil {
-		log.Fatalf("conn.Channel error : %s  \n", err)
-	}
+	err, channel := getChannel(url)
+
+	failOnError(err, "Failed to open a channel")
 
 	queue, err := channel.QueueDeclare(
-		"",
+		name,
 		false,
 		true,
 		false,
@@ -34,9 +34,7 @@ func New(url string) *RabbitMQ {
 		nil,
 	)
 
-	if err != nil {
-		log.Fatalf("channel.QueueDeclare error : %s  \n", err)
-	}
+	failOnError(err, "Failed to bind a queue")
 
 	mq := new(RabbitMQ)
 
@@ -44,6 +42,40 @@ func New(url string) *RabbitMQ {
 	mq.Name = queue.Name
 
 	return mq
+}
+
+//新建交换机
+func NewExchange(url string, exchangeName string) *RabbitMQ {
+	err, channel := getChannel(url)
+
+	failOnError(err, "Failed to open a channel")
+
+	err = channel.ExchangeDeclare(
+		exchangeName, // name
+		"direct",     // type
+		true,         // durable
+		false,        // auto-deleted
+		false,        // internal
+		false,        // no-wait
+		nil,          // arguments
+	)
+
+	failOnError(err, "Failed to declare an exchange")
+
+	mq := new(RabbitMQ)
+
+	mq.channel = channel
+	mq.exchange = exchangeName
+	return mq
+}
+
+//获取通道
+func getChannel(url string) (error, *amqp.Channel) {
+	conn, err := amqp.Dial(url)
+	failOnError(err, "Failed to connect to RabbitMQ")
+	channel, err := conn.Channel()
+	failOnError(err, "Failed to open a channel")
+	return err, channel
 }
 
 //绑定交换机
@@ -129,4 +161,10 @@ func (q *RabbitMQ) Consume() <-chan amqp.Delivery {
 //关闭消息队列
 func (q *RabbitMQ) Close() {
 	q.channel.Close()
+}
+
+func failOnError(err error, msg string) {
+	if err != nil {
+		log.Fatalf("%s: %s", msg, err)
+	}
 }

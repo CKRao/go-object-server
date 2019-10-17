@@ -6,6 +6,7 @@ import (
 	"go-object-server/heartbeat"
 	"go-object-server/locate"
 	"go-object-server/objects"
+	"go-object-server/util"
 	"log"
 	"net/http"
 )
@@ -18,6 +19,8 @@ func main() {
 
 	//初始化配置
 	Config = commons.GetConfigIns()
+	//获取外网IP
+	util.GetAddress()
 	//数据服务心跳发送消息
 	go heartbeat.StartHeartBeat()
 	//数据服务locate 定位对象和监听定位消息

@@ -30,13 +30,14 @@ type locateMsg struct {
 }
 
 func StartLocate() {
-	ip := util.GetIP()
 	//新建RabbitMQ实体
-	q := mq.New(commons.GetConfigIns().GetMqUrl())
+	q := mq.NewByName(commons.GetConfigIns().GetMqUrl(), "ObjectServer:"+util.GetIP())
 	defer q.Close()
 
 	q.Bind(exchangeName)
 	c := q.Consume()
+
+	address := util.GetAddress()
 
 	for msg := range c {
 		//mqMsg := &locateMsg{}
@@ -47,7 +48,7 @@ func StartLocate() {
 		//}
 		path := fmt.Sprintf("%s/objects/%s", objects.StorageRoot, s)
 		if Locate(path) {
-			q.Send(msg.ReplyTo, ip)
+			q.Send(msg.ReplyTo, address)
 		}
 	}
 }
